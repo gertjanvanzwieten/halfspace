@@ -68,18 +68,18 @@ Second argument is the poisson ratio. For displacement, gradient, and strain,
 this is the only determining parameter. For stress additionally the Young's
 modulus of elasticity should be specified.
 
-  >> u = okada.displacement( [1e3,1e4,0] ) # u.shape = 3,
-  >> G = okada.gradient( [[1e3,2e3,0],[0,1e3,0]] ) # G.shape = 2,3,3
+    >> u = okada.displacement( [1e3,1e4,0] ) # u.shape = 3,
+    >> G = okada.gradient( [[1e3,2e3,0],[0,1e3,0]] ) # G.shape = 2,3,3
 
 Furthermore, sources can be added and scaled using the + and * operators.
 
-  >> multi = okada + mogi * 10
+    >> multi = okada + mogi * 10
 
 The resulting MultiSource object has the same functionalities as the
 individial source objects, and can be used to quickly evaluate any
 linear combination. The individual sources can be retrieved using the
 [] operator
 
-  >> multi[0] is okada # True
+    >> multi[0] is okada # True
 
 For further usage examples please see the scripts directory.
