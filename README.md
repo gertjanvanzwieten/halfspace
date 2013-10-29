@@ -42,6 +42,7 @@ strikeslip-dipslip must occur in pairs, and opening defaults to zero):
   * opening: displacement jump in normal direction [m]
 
 For example:
+
     >> okada = halfspace.OkadaSource( length=16e3, strike=30, dip=60,
                    ztop=-1.5e3, zbottom=-7e3, xtrace=0, ytrace=0,
                         slip=1.5, rake=0 )
