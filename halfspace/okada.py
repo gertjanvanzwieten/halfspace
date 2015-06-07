@@ -1,36 +1,43 @@
-import numpy, sys, os
-from cffi import FFI
+import numpy, sys, os, ctypes
 
-ffi = FFI()
-ffi.cdef( '''
-typedef struct {
-  double strike, dip;
-  double length, width;
-  double xbottom, ybottom, zbottom;
-  double strikeslip, dipslip, opening;
-} OkadaSource;
-
-void get_displacements( double *out, OkadaSource *src, double *where, double poisson, int count );
-void get_gradients( double *out, OkadaSource *src, double *where, double poisson, int count );
-''' )
-
-dirname = os.path.dirname( sys.modules[__name__].__file__ )
+dirname = os.path.dirname(__file__)
 libokadapath = os.path.join( dirname, 'libokada.so' )
-libokada = ffi.dlopen( libokadapath )
+libokada = ctypes.cdll.LoadLibrary( libokadapath )
 
-def get_data( sourceparams, xyz, poisson, func, *shape ):
-  xyz = numpy.ascontiguousarray( xyz, dtype=float )
-  assert xyz.shape[-1] == 3
-  out = numpy.empty( xyz.shape + shape )
-  func(
-    ffi.cast( 'double *', out.ctypes.data ),
-    ffi.new( 'OkadaSource *', sourceparams ),
-    ffi.cast( 'double *', xyz.ctypes.data ),
-    poisson, xyz.size//3 )
-  return out
+# typedef struct {
+#   double strike, dip;
+#   double length, width;
+#   double xbottom, ybottom, zbottom;
+#   double strikeslip, dipslip, opening;
+# } OkadaSource;
+# 
+# void get_displacements( double *out, OkadaSource *src, double *where, double poisson, int count );
+# void get_gradients( double *out, OkadaSource *src, double *where, double poisson, int count );
 
-def get_displacements( sourceparams, xyz, poisson ):
-  return get_data( sourceparams, xyz, poisson, libokada.get_displacements )
+class SourceParams( ctypes.Structure ):
 
-def get_gradients( sourceparams, xyz, poisson ):
-  return get_data( sourceparams, xyz, poisson, libokada.get_gradients, 3 )
+  _fields_ = [
+    ( 'strike',     ctypes.c_double ),
+    ( 'dip',        ctypes.c_double ),
+    ( 'length',     ctypes.c_double ),
+    ( 'width',      ctypes.c_double ),
+    ( 'xbottom',    ctypes.c_double ),
+    ( 'ybottom',    ctypes.c_double ),
+    ( 'zbottom',    ctypes.c_double ),
+    ( 'strikeslip', ctypes.c_double ),
+    ( 'dipslip',    ctypes.c_double ),
+    ( 'opening',    ctypes.c_double ),
+  ]
+
+  def _call( self, func, xyz, poisson, *shape ):
+    xyz = numpy.ascontiguousarray( xyz, dtype=float )
+    assert xyz.shape[-1] == 3
+    out = numpy.empty( xyz.shape + shape, dtype=numpy.double )
+    func( out.ctypes, self, xyz.ctypes, ctypes.c_double(poisson), ctypes.c_int(xyz.size//3) )
+    return out
+  
+  def get_displacements( self, xyz, poisson ):
+    return self._call( libokada.get_displacements, xyz, poisson )
+  
+  def get_gradients( self, xyz, poisson ):
+    return self._call( libokada.get_gradients, xyz, poisson, 3 )

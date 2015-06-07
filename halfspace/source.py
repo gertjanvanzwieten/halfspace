@@ -9,8 +9,6 @@ def dtan( x ): return numpy.tan( x * numpy.pi / 180. )
 
 class Source( object ):
 
-  __slots__ = ()
-
   def strain( self, xyz, poisson ):
     grad = self.gradient( xyz, poisson )
     return .5 * ( grad + grad.swapaxes(-1,-2) )
@@ -32,8 +30,6 @@ class Source( object ):
 
 
 class AddSource( Source ):
-
-  __slots__ = 'source1', 'source2'
 
   def __init__( self, source1, source2 ):
     self.source1 = source1
@@ -61,14 +57,14 @@ class MultiFun( tuple ):
 
 class OkadaSource( Source ):
 
-  __slots__ = 'strike', 'dip', 'length', 'width', 'bottom', 'strikeslip', 'dipslip', 'opening'
-
   def __init__( self, **kwargs ):
     self.strike, self.dip, self.length, self.width, self.bottom, geom_args = self._rectangle( **kwargs )
     self.strikeslip, self.dipslip, self.opening, leftover = self._slip( **geom_args )
     assert not leftover, 'leftover arguments: %s' % ', '.join( leftover.keys() )
     for key, value in kwargs.items():
       numpy.testing.assert_almost_equal( value, getattr(self,key) )
+
+    self._sourceparams = okada.SourceParams( self.strike, self.dip, self.length, self.width, self.bottom[0], self.bottom[1], self.bottom[2], self.strikeslip, self.dipslip, opening=self.opening )
 
   # find strike, dip, length, width, bottom
   _rectangle = MultiFun([
@@ -88,7 +84,6 @@ class OkadaSource( Source ):
       numpy.array([ xtrace - zbottom * dcos(strike) / dtan(dip), ytrace + zbottom * dsin(strike) / dtan(dip), zbottom ]),
       leftover ),
   ])
-  
   
   # find strikeslip, dipslip, opening
   _slip = MultiFun([
@@ -191,12 +186,8 @@ class OkadaSource( Source ):
   def slipvec( self ):
     return self.strikeslip * self.strikevec + self.dipslip * self.dipvec + self.opening * self.openvec
 
-  @property
-  def sourceparams( self ):
-    return self.strike, self.dip, self.length, self.width, self.bottom[0], self.bottom[1], self.bottom[2], self.strikeslip, self.dipslip, self.opening
-
   def displacement( self, xyz, poisson ):
-    return okada.get_displacements( self.sourceparams, xyz, poisson )
+    return self._sourceparams.get_displacements( xyz, poisson )
 
   def gradient( self, xyz, poisson ):
-    return okada.get_gradients( self.sourceparams, xyz, poisson )
+    return self._sourceparams.get_gradients( xyz, poisson )
