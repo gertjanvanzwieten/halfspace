@@ -1,1 +1,2 @@
-from source import OkadaSource
+from okada import OkadaSource
+from mogi import MogiSource
