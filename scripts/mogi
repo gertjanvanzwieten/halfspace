@@ -10,9 +10,9 @@ wavelength = .056 # meter
 extent = -25e3, 25e3, -25e3, 25e3 # meter (xmin,xmax,ymin,ymax)
 
 sources = [
-  halfspace.MogiSource( xyz=[0,0,-1e4], strength=1 ),
-  halfspace.MogiSource( xyz=[10e3,0,-1e4], strength=1 ),
-  halfspace.MogiSource( xyz=[-5e3,-5e3,-1e4], strength=1 ),
+  halfspace.MogiSource( xyz=[0,0,-1e4] ),
+  halfspace.MogiSource( xyz=[10e3,0,-1e4] ),
+  halfspace.MogiSource( xyz=[-5e3,-5e3,-1e4] ),
 ]
 
 measpoints = numpy.random.uniform( low=-25e3, high=25e3, size=[10,2] )

@@ -25,12 +25,23 @@ class Source( object ):
     return AddSource( self, other )
 
   def __radd__( self, other ):
-    return self + other
+    return self.__add__( other )
+
+  def __mul__( self, other ):
+    assert isinstance( other, (int,float) )
+    if other == 1:
+      return self
+    return ScaleSource( self, other )
+
+  def __rmul__( self, other ):
+    return self.__mul__( other )
 
 
 class AddSource( Source ):
 
   def __init__( self, source1, source2 ):
+    assert isinstance( source1, Source )
+    assert isinstance( source2, Source )
     self.source1 = source1
     self.source2 = source2
 
@@ -38,6 +49,24 @@ class AddSource( Source ):
     return self.source1.displacement( xyz, poisson ) \
          + self.source2.displacement( xyz, poisson )
 
-  def gradient( self, xyz ):
+  def gradient( self, xyz, poisson ):
     return self.source1.gradient( xyz, poisson ) \
          + self.source2.gradient( xyz, poisson )
+
+
+class ScaleSource( Source ):
+
+  def __init__( self, source, scale ):
+    assert isinstance( source, Source )
+    assert isinstance( scale, (int,float) )
+    self.source = source
+    self.scale = scale
+
+  def displacement( self, xyz, poisson ):
+    return self.scale * self.source.displacement( xyz, poisson )
+
+  def gradient( self, xyz, poisson ):
+    return self.scale * self.source.gradient( xyz, poisson )
+
+  def __mul__( self, other ):
+    return self.source.__mul__( self.scale * scale )

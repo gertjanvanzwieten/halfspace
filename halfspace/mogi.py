@@ -11,10 +11,9 @@ def diag( A ):
 
 class MogiSource( Source ):
 
-  def __init__( self, xyz, strength ):
+  def __init__( self, xyz ):
     self.xyz = numpy.array(xyz)
     assert self.xyz.ndim == 1 and self.xyz.size == 3
-    self.strength = strength
 
   def displacement( self, xyz, poisson ):
     xyz = numpy.asarray( xyz )
@@ -36,7 +35,7 @@ class MogiSource( Source ):
     u -= uA
     u *= 1 - 2*poisson
 
-    return self.strength * u
+    return u
 
   def gradient( self, xyz, poisson ):
     xyz = numpy.asarray( xyz )
@@ -71,4 +70,4 @@ class MogiSource( Source ):
     dudxyz -= duAdxyz
     dudxyz *= 1 - 2*poisson
 
-    return self.strength * dudxyz.swapaxes(-2,-1)
+    return dudxyz.swapaxes(-2,-1)

@@ -76,4 +76,4 @@ class TestMogi( BaseTest ):
 
   def __init__( self ):
 
-    self.source = halfspace.MogiSource( xyz=[1,2,-3], strength=2 )
+    self.source = halfspace.MogiSource( xyz=[1,2,-3] ) * 2
