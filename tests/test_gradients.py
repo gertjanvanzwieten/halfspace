@@ -9,26 +9,28 @@ class BaseTest( object ):
     x, y, z = 2, 3, -1
     
     grad = self.source.gradient( [x,y,0], poisson=.25 )
-    
-    dudx = ( self.source.displacement( [x+self.eps,y,0], poisson=.25 )
-           - self.source.displacement( [x-self.eps,y,0], poisson=.25 ) ) / (2*self.eps)
-    dudy = ( self.source.displacement( [x,y+self.eps,0], poisson=.25 )
-           - self.source.displacement( [x,y-self.eps,0], poisson=.25 ) ) / (2*self.eps)
-    dudz = ( self.source.displacement( [x,y,0],          poisson=.25 )
-           - self.source.displacement( [x,y,-self.eps],  poisson=.25 ) ) / self.eps
 
-    numpy.testing.assert_almost_equal( [ dudx, dudy, dudz ], grad, decimal=7 )
+    ngrad = numpy.empty((3,3))
+    ngrad[:,0] = ( self.source.displacement( [x+self.eps,y,0], poisson=.25 )
+                 - self.source.displacement( [x-self.eps,y,0], poisson=.25 ) ) / (2*self.eps)
+    ngrad[:,1] = ( self.source.displacement( [x,y+self.eps,0], poisson=.25 )
+                 - self.source.displacement( [x,y-self.eps,0], poisson=.25 ) ) / (2*self.eps)
+    ngrad[:,2] = ( self.source.displacement( [x,y,0],          poisson=.25 )
+                 - self.source.displacement( [x,y,-self.eps],  poisson=.25 ) ) / self.eps
+
+    numpy.testing.assert_almost_equal( ngrad, grad, decimal=7 )
 
     grad = self.source.gradient( [x,y,z], poisson=.25 )
     
-    dudx = ( self.source.displacement( [x+self.eps,y,z], poisson=.25 )
-           - self.source.displacement( [x-self.eps,y,z], poisson=.25 ) ) / (2*self.eps)
-    dudy = ( self.source.displacement( [x,y+self.eps,z], poisson=.25 )
-           - self.source.displacement( [x,y-self.eps,z], poisson=.25 ) ) / (2*self.eps)
-    dudz = ( self.source.displacement( [x,y,z+self.eps], poisson=.25 )
-           - self.source.displacement( [x,y,z-self.eps], poisson=.25 ) ) / (2*self.eps)
+    ngrad = numpy.empty((3,3))
+    ngrad[:,0] = ( self.source.displacement( [x+self.eps,y,z], poisson=.25 )
+                 - self.source.displacement( [x-self.eps,y,z], poisson=.25 ) ) / (2*self.eps)
+    ngrad[:,1] = ( self.source.displacement( [x,y+self.eps,z], poisson=.25 )
+                 - self.source.displacement( [x,y-self.eps,z], poisson=.25 ) ) / (2*self.eps)
+    ngrad[:,2] = ( self.source.displacement( [x,y,z+self.eps], poisson=.25 )
+                 - self.source.displacement( [x,y,z-self.eps], poisson=.25 ) ) / (2*self.eps)
 
-    numpy.testing.assert_almost_equal( [ dudx, dudy, dudz ], grad, decimal=7 )
+    numpy.testing.assert_almost_equal( ngrad, grad, decimal=7 )
 
   def test_divergence( self ):
 

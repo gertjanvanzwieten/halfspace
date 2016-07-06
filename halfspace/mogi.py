@@ -29,7 +29,6 @@ class MogiSource( Source ):
     u *= .25 / (1-poisson)
     u -= uA
     u *= 1 - 2*poisson
-
     return u
 
   def gradient( self, xyz, poisson ):
@@ -64,5 +63,4 @@ class MogiSource( Source ):
     dudxyz *= .25 / (1-poisson)
     dudxyz -= duAdxyz
     dudxyz *= 1 - 2*poisson
-
-    return dudxyz.swapaxes(-2,-1)
+    return dudxyz

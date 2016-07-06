@@ -99,4 +99,4 @@ class OkadaSource( Source ):
   
   def gradient( self, xyz, poisson ):
     # void get_gradients( double *out, OkadaSource *src, double *where, double poisson, int count );
-    return self._call( libokada.get_gradients, xyz, poisson, 3 )
+    return self._call( libokada.get_gradients, xyz, poisson, 3 ).swapaxes(-1,-2)
