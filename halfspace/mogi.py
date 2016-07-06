@@ -1,12 +1,7 @@
 import numpy
-from source import Source
+from source import Source, diag
 
 _ = numpy.newaxis
-
-
-def diag( A ):
-  assert A.shape[-1] == A.shape[-2]
-  return numpy.lib.stride_tricks.as_strided( A, shape=A.shape[:-1], strides=A.strides[:-2]+(A.strides[-2]+A.strides[-1],) )
 
 
 class MogiSource( Source ):

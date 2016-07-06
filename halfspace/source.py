@@ -12,10 +12,7 @@ class Source( object ):
     mu = young/float(2*(1+poisson))
     strain = self.strain( xyz, poisson )
     stress = (2*mu) * strain
-    trace = lmbda * numpy.trace( strain, axis1=-2, axis2=-1 )
-    stress[...,0,0] += trace
-    stress[...,1,1] += trace
-    stress[...,2,2] += trace
+    diag(stress)[...] += lmbda * numpy.trace( strain, axis1=-2, axis2=-1 )
     return stress
 
   def __add__( self, other ):
@@ -70,3 +67,9 @@ class ScaleSource( Source ):
 
   def __mul__( self, other ):
     return self.source.__mul__( self.scale * scale )
+
+
+def diag( A ):
+
+  assert A.shape[-1] == A.shape[-2]
+  return numpy.lib.stride_tricks.as_strided( A, shape=A.shape[:-1], strides=A.strides[:-2]+(A.strides[-2]+A.strides[-1],) )
