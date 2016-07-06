@@ -442,18 +442,18 @@ typedef struct { // SourceParams
   double xbottom, ybottom, zbottom;
   double strikeslip, dipslip, opening;
 } SourceParams;
-Vector get_displacement( SourceParams params, Vector *where, double poisson ) {
-  const Angle dip = from_deg( params.dip );
-  const Angle perp_strike = from_deg( params.strike - 90. );
-  Vector U = { params.strikeslip / ( 2. * M_PI ), params.dipslip / ( 2. * M_PI ), params.opening / ( 2. * M_PI ) };
-  Vector point = { where->x - params.xbottom, where->y - params.ybottom, where->z };
+Vector get_displacement( SourceParams *params, Vector *where, double poisson ) {
+  const Angle dip = from_deg( params->dip );
+  const Angle perp_strike = from_deg( params->strike - 90. );
+  Vector U = { params->strikeslip / ( 2. * M_PI ), params->dipslip / ( 2. * M_PI ), params->opening / ( 2. * M_PI ) };
+  Vector point = { where->x - params->xbottom, where->y - params->ybottom, where->z };
   OkadaConsts consts;
   int i;
   Vector disp = { 0 };
   if ( point.z == 0 ) {
     Vector_irot_xy( &point, perp_strike );
     for ( i = 0; i < 4; i++ ) {
-      okada_get_consts( &consts, point, -params.zbottom, dip, params.length, params.width, i, poisson );
+      okada_get_consts( &consts, point, -params->zbottom, dip, params->length, params->width, i, poisson );
       if ( i & 1 ) Vector_flip( &U );
       okada_add_disp_B( &disp, &consts, U );
     }
@@ -463,7 +463,7 @@ Vector get_displacement( SourceParams params, Vector *where, double poisson ) {
     Vector v = { 0 };
     Vector_irot_xy( &point, perp_strike );
     for ( i = 0; i < 4; i++ ) {
-      okada_get_consts( &consts, point, -params.zbottom, dip, params.length, params.width, i, poisson );
+      okada_get_consts( &consts, point, -params->zbottom, dip, params->length, params->width, i, poisson );
       if ( i & 1 ) Vector_flip( &U );
       okada_add_disp_A( &disp, &consts, U );
       okada_add_disp_B( &disp, &consts, U );
@@ -472,7 +472,7 @@ Vector get_displacement( SourceParams params, Vector *where, double poisson ) {
     v.z = -v.z;
     point.z = -point.z;
     for ( i = 0; i < 4; i++ ) {
-      okada_get_consts( &consts, point, -params.zbottom, dip, params.length, params.width, i, poisson );
+      okada_get_consts( &consts, point, -params->zbottom, dip, params->length, params->width, i, poisson );
       if ( i & 1 ) Vector_flip( &U );
       okada_add_disp_A( &disp, &consts, Vector_mul( U, -1.0 ) );
     }
@@ -483,11 +483,11 @@ Vector get_displacement( SourceParams params, Vector *where, double poisson ) {
   Vector_irot_yx( &disp, perp_strike );
   return disp;
 }
-Matrix get_gradient( SourceParams params, Vector *where, double poisson ) {
-  const Angle dip = from_deg( params.dip );
-  const Angle perp_strike = from_deg( params.strike - 90. );
-  Vector U = { params.strikeslip / ( 2. * M_PI ), params.dipslip / ( 2. * M_PI ), params.opening / ( 2. * M_PI ) };
-  Vector point = { where->x - params.xbottom, where->y - params.ybottom, where->z };
+Matrix get_gradient( SourceParams *params, Vector *where, double poisson ) {
+  const Angle dip = from_deg( params->dip );
+  const Angle perp_strike = from_deg( params->strike - 90. );
+  Vector U = { params->strikeslip / ( 2. * M_PI ), params->dipslip / ( 2. * M_PI ), params->opening / ( 2. * M_PI ) };
+  Vector point = { where->x - params->xbottom, where->y - params->ybottom, where->z };
   Matrix grad = { 0 };
   OkadaConsts consts;
   int i;
@@ -495,7 +495,7 @@ Matrix get_gradient( SourceParams params, Vector *where, double poisson ) {
     Vector h_z = { 0 };
     Vector_irot_xy( &point, perp_strike );
     for ( i = 0; i < 4; i++ ) {
-      okada_get_more_consts( &consts, point, -params.zbottom, dip, params.length, params.width, i, poisson );
+      okada_get_more_consts( &consts, point, -params->zbottom, dip, params->length, params->width, i, poisson );
       if ( i & 1 ) Vector_flip( &U );
       okada_add_grad_Az( &(grad.z), &consts, Vector_mul( U,  2.0 ) );
       okada_add_grad_B( &grad, &consts, U );
@@ -512,7 +512,7 @@ Matrix get_gradient( SourceParams params, Vector *where, double poisson ) {
     Matrix h = {{ 0 }};
     Vector_irot_xy( &point, perp_strike );
     for ( i = 0; i < 4; i++ ) {
-      okada_get_more_consts( &consts, point, -params.zbottom, dip, params.length, params.width, i, poisson );
+      okada_get_more_consts( &consts, point, -params->zbottom, dip, params->length, params->width, i, poisson );
       if ( i & 1 ) Vector_flip( &U );
       okada_add_grad_Axy( &grad, &consts, U );
       okada_add_grad_Az( &(grad.z), &consts, U );
@@ -522,7 +522,7 @@ Matrix get_gradient( SourceParams params, Vector *where, double poisson ) {
     }
     point.z = -point.z;
     for ( i = 0; i < 4; i++ ) {
-      okada_get_more_consts( &consts, point, -params.zbottom, dip, params.length, params.width, i, poisson );
+      okada_get_more_consts( &consts, point, -params->zbottom, dip, params->length, params->width, i, poisson );
       if ( i & 1 ) Vector_flip( &U );
       okada_add_grad_Axy( &grad, &consts, Vector_mul( U, -1.0 ) );
       okada_add_grad_Az( &(grad.z), &consts, U );
@@ -537,10 +537,10 @@ Matrix get_gradient( SourceParams params, Vector *where, double poisson ) {
   Matrix_irot_xy( &grad, perp_strike );
   return grad;
 }
-void get_displacements( Vector *out, SourceParams params, Vector *where, double poisson, int count ) {
+void get_displacements( Vector *out, SourceParams *params, Vector *where, double poisson, int count ) {
   while ( count-- ) Vector_copy( out++, get_displacement(params,where++,poisson) );
 }
-void get_gradients( Matrix *out, SourceParams params, Vector *where, double poisson, int count ) {
+void get_gradients( Matrix *out, SourceParams *params, Vector *where, double poisson, int count ) {
   while ( count-- ) Matrix_copy( out++, get_gradient(params,where++,poisson) );
 }
 
