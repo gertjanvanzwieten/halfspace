@@ -26,10 +26,18 @@
  *
  */
 
+#ifdef DLL
+  #define EXPORT __declspec(dllexport)
+#else
+  #define EXPORT
+#endif
+
+#define _USE_MATH_DEFINES
+
 #include <math.h>
 #include <stdio.h>
 
-static inline int isTiny( double x ) {
+__inline int isTiny( double x ) {
   return x < 1e-10 && x > -1e-10;
 }
 
@@ -42,7 +50,7 @@ static inline int isTiny( double x ) {
 typedef struct { // Angle
   double sin, cos;
 } Angle;
-static inline Angle from_deg( const double deg ) {
+__inline Angle from_deg( const double deg ) {
   const double rad = deg * M_PI / 180.;
   Angle angle = { sin( rad ), cos( rad ) };
   return angle;
@@ -57,62 +65,62 @@ static inline Angle from_deg( const double deg ) {
 typedef struct { // Vector
   double x, y, z;
 } Vector;
-static inline void Vector_copy( Vector *self, const Vector other ) {
+__inline void Vector_copy( Vector *self, const Vector other ) {
   self->x = other.x;
   self->y = other.y;
   self->z = other.z;
 }
-static inline void Vector_flip( Vector *self ) {
+__inline void Vector_flip( Vector *self ) {
   self->x = -self->x;
   self->y = -self->y;
   self->z = -self->z;
 }
-static inline void Vector_iadd( Vector *self, const Vector other ) {
+__inline void Vector_iadd( Vector *self, const Vector other ) {
   self->x += other.x;
   self->y += other.y;
   self->z += other.z;
 }
-static inline void Vector_isub( Vector *self, const Vector other ) {
+__inline void Vector_isub( Vector *self, const Vector other ) {
   self->x -= other.x;
   self->y -= other.y;
   self->z -= other.z;
 }
-static inline void Vector_imul( Vector *self, const double factor ) {
+__inline void Vector_imul( Vector *self, const double factor ) {
   self->x *= factor;
   self->y *= factor;
   self->z *= factor;
 }
-static inline void Vector_irot_yz( Vector *self, const Angle angle ) {
+__inline void Vector_irot_yz( Vector *self, const Angle angle ) {
   const double y = self->y, z = self->z;
   self->y = y * angle.cos - z * angle.sin;
   self->z = z * angle.cos + y * angle.sin;
 }
-static inline void Vector_irot_zy( Vector *self, const Angle angle ) {
+__inline void Vector_irot_zy( Vector *self, const Angle angle ) {
   const double y = self->y, z = self->z;
   self->y = y * angle.cos + z * angle.sin;
   self->z = z * angle.cos - y * angle.sin;
 }
-static inline void Vector_irot_zx( Vector *self, const Angle angle ) {
+__inline void Vector_irot_zx( Vector *self, const Angle angle ) {
   const double z = self->z, x = self->x;
   self->z = z * angle.cos - x * angle.sin;
   self->x = x * angle.cos + z * angle.sin;
 }
-static inline void Vector_irot_xz( Vector *self, const Angle angle ) {
+__inline void Vector_irot_xz( Vector *self, const Angle angle ) {
   const double z = self->z, x = self->x;
   self->z = z * angle.cos + x * angle.sin;
   self->x = x * angle.cos - z * angle.sin;
 }
-static inline void Vector_irot_xy( Vector *self, const Angle angle ) {
+__inline void Vector_irot_xy( Vector *self, const Angle angle ) {
   const double x = self->x, y = self->y;
   self->x = x * angle.cos - y * angle.sin;
   self->y = y * angle.cos + x * angle.sin;
 }
-static inline void Vector_irot_yx( Vector *self, const Angle angle ) {
+__inline void Vector_irot_yx( Vector *self, const Angle angle ) {
   const double x = self->x, y = self->y;
   self->x = x * angle.cos + y * angle.sin;
   self->y = y * angle.cos - x * angle.sin;
 }
-static inline Vector Vector_mul( Vector self, double factor ) {
+__inline Vector Vector_mul( Vector self, double factor ) {
   Vector retval = { self.x * factor, self.y * factor, self.z * factor };
   return retval;
 }
@@ -126,39 +134,40 @@ static inline Vector Vector_mul( Vector self, double factor ) {
 typedef struct { // Matrix
   Vector x, y, z;
 } Matrix;
-static inline void Matrix_iadd( Matrix *self, const Matrix other ) {
+__inline void Matrix_iadd( Matrix *self, const Matrix other ) {
   Vector_iadd( &(self->x), other.x );
   Vector_iadd( &(self->y), other.y );
   Vector_iadd( &(self->z), other.z );
 }
-static inline void Matrix_isub( Matrix *self, const Matrix other ) {
+__inline void Matrix_isub( Matrix *self, const Matrix other ) {
   Vector_isub( &(self->x), other.x );
   Vector_isub( &(self->y), other.y );
   Vector_isub( &(self->z), other.z );
 }
-static inline void Matrix_imul( Matrix *self, const double factor ) {
+__inline void Matrix_imul( Matrix *self, const double factor ) {
   Vector_imul( &(self->x), factor );
   Vector_imul( &(self->y), factor );
   Vector_imul( &(self->z), factor );
 }
-static inline void Matrix_copy( Matrix *self, const Matrix other ) {
+__inline void Matrix_copy( Matrix *self, const Matrix other ) {
   Vector_copy( &(self->x), other.x );
   Vector_copy( &(self->y), other.y );
   Vector_copy( &(self->z), other.z );
 }
-static inline void Matrix_irot_xy( Matrix *self, const Angle angle ) {
+__inline void Matrix_irot_xy( Matrix *self, const Angle angle ) {
   const double yyxx = ( self->y.y - self->x.x ) * angle.sin;
   const double xyyx = ( self->x.y + self->y.x ) * angle.sin;
   const double diag =  yyxx * angle.sin + xyyx * angle.cos;
   const double offd = -xyyx * angle.sin + yyxx * angle.cos;
-  self->x.x +=  diag;
-  self->y.y += -diag;
-  self->x.y +=  offd;
-  self->y.x +=  offd;
+  const double xz = self->x.z;
+  const double yz = self->y.z;
+  self->x.x += diag;
+  self->x.y += offd;
+  self->x.z = xz * angle.cos + yz * angle.sin;
+  self->y.x += offd;
+  self->y.y -= diag;
+  self->y.z = yz * angle.cos - xz * angle.sin;
   Vector_irot_yx( &(self->z), angle );
-  double x = self->x.z, y = self->y.z;
-  self->x.z = x * angle.cos + y * angle.sin;
-  self->y.z = y * angle.cos - x * angle.sin;
 }
 
 // +-----------------------+
@@ -184,7 +193,7 @@ typedef struct { // OkadaConsts
   // elasticity
   double ALPHA;
 } OkadaConsts;
-static inline void okada_get_consts( OkadaConsts *consts, const Vector coord, const double c, const Angle dip, const double length, const double width, const int n, const double poisson ) {
+__inline void okada_get_consts( OkadaConsts *consts, const Vector coord, const double c, const Angle dip, const double length, const double width, const int n, const double poisson ) {
   consts->sin    = dip.sin;
   consts->cos    = dip.cos;
   consts->z      = coord.z;
@@ -225,7 +234,7 @@ static inline void okada_get_consts( OkadaConsts *consts, const Vector coord, co
   consts->I1     = -consts->xi * dip.cos / ( consts->R + consts->dtilde ) - consts->I4 * dip.sin;
   consts->ALPHA  = .5 / ( 1. - poisson );
 };
-static inline void okada_get_more_consts( OkadaConsts *consts, const Vector coord, const double c, const Angle dip, const double length, const double width, const int n, const double poisson ) {
+__inline void okada_get_more_consts( OkadaConsts *consts, const Vector coord, const double c, const Angle dip, const double length, const double width, const int n, const double poisson ) {
   okada_get_consts( consts, coord, c, dip, length, width, n, poisson );
   consts->D11    = 1. / ( consts->R * ( consts->R + consts->dtilde ) );
   if ( isTiny( dip.cos ) ) {
@@ -263,7 +272,7 @@ static inline void okada_get_more_consts( OkadaConsts *consts, const Vector coor
   consts->Pprime = dip.sin / consts->R3 - consts->q * consts->Y32 * dip.cos;
   consts->Qprime = 3. * consts->ctilde * consts->ytilde / consts->R5 + consts->q * consts->Y32 - ( consts->z * consts->Y32 + consts->Z32 + consts->Z0 ) * dip.cos;
 };
-static inline void okada_add_disp_A( Vector *disp, const OkadaConsts *consts, const Vector U ) {
+__inline void okada_add_disp_A( Vector *disp, const OkadaConsts *consts, const Vector U ) {
   if ( U.x ) {
     disp->x += U.x * ( .5 * consts->theta + .5 * consts->ALPHA * consts->xi * consts->q * consts->Y11 );
     disp->y += U.x * ( .5 * consts->ALPHA * consts->q / consts->R );
@@ -280,7 +289,7 @@ static inline void okada_add_disp_A( Vector *disp, const OkadaConsts *consts, co
     disp->z += U.z * ( .5 * consts->theta - .5 * consts->ALPHA * consts->q * ( consts->eta * consts->X11 + consts->xi * consts->Y11 ) );
   }
 }
-static inline void okada_add_disp_B( Vector *disp, const OkadaConsts *consts, const Vector U ) {
+__inline void okada_add_disp_B( Vector *disp, const OkadaConsts *consts, const Vector U ) {
   if ( U.x ) {
     disp->x += U.x * ( -consts->xi * consts->q * consts->Y11 - consts->theta - ( 1.0 - consts->ALPHA ) / consts->ALPHA * consts->I1 * consts->sin );
     disp->y += U.x * ( -consts->q / consts->R + ( 1.0 - consts->ALPHA ) / consts->ALPHA * consts->ytilde / ( consts->R + consts->dtilde ) * consts->sin );
@@ -297,7 +306,7 @@ static inline void okada_add_disp_B( Vector *disp, const OkadaConsts *consts, co
     disp->z += U.z * ( consts->q * ( consts->eta * consts->X11 + consts->xi * consts->Y11 ) - consts->theta - ( 1.0 - consts->ALPHA ) / consts->ALPHA * consts->I4 * consts->sin * consts->sin );
   }
 }
-static inline void okada_add_disp_C( Vector *disp, const OkadaConsts *consts, const Vector U ) {
+__inline void okada_add_disp_C( Vector *disp, const OkadaConsts *consts, const Vector U ) {
   if ( U.x ) {
     disp->x += U.x * ( ( 1.0 - consts->ALPHA ) * consts->xi * consts->Y11 * consts->cos - consts->ALPHA * consts->xi * consts->q * consts->Z32 );
     disp->y += U.x * ( ( 1.0 - consts->ALPHA ) * ( consts->cos / consts->R + 2.0 * consts->q * consts->Y11 * consts->sin ) - consts->ALPHA * consts->ctilde * consts->q / consts->R3 );
@@ -314,7 +323,7 @@ static inline void okada_add_disp_C( Vector *disp, const OkadaConsts *consts, co
     disp->z += U.z * ( ( 1.0 - consts->ALPHA ) * ( consts->ytilde * consts->X11 + consts->xi * consts->Y11 * consts->cos ) + consts->ALPHA * consts->q * ( consts->ctilde * consts->eta * consts->X32 + consts->xi * consts->Z32 ) );
   }
 }
-static inline void okada_add_grad_Axy( Matrix *grad, const OkadaConsts *consts, const Vector U ) {
+__inline void okada_add_grad_Axy( Matrix *grad, const OkadaConsts *consts, const Vector U ) {
   if ( U.x ) {
     grad->x.x += U.x * ( -.5 * ( 1. - consts->ALPHA ) * consts->q * consts->Y11  - .5 * consts->ALPHA * consts->xi * consts->xi * consts->q * consts->Y32 );
     grad->x.y += U.x * ( -.5 * consts->ALPHA * consts->xi * consts->q / consts->R3 );
@@ -340,7 +349,7 @@ static inline void okada_add_grad_Axy( Matrix *grad, const OkadaConsts *consts, 
     grad->y.z += U.z * (  .5 * ( 1. - consts->ALPHA ) * ( consts->dtilde * consts->X11 + consts->xi * consts->Y11 * consts->sin ) + .5 * consts->ALPHA * consts->q * consts->H );
   }
 }
-static inline void okada_add_grad_Az( Vector *gradz, const OkadaConsts *consts, const Vector U ) {
+__inline void okada_add_grad_Az( Vector *gradz, const OkadaConsts *consts, const Vector U ) {
   if ( U.x ) {
     gradz->x += U.x * (  .5 * ( 1. - consts->ALPHA ) * consts->xi * consts->Y11 * consts->cos + .5 * consts->ytilde * consts->X11 + .5 * consts->ALPHA * consts->xi * consts->Fprime );
     gradz->y += U.x * (  .5 * consts->ALPHA * consts->Eprime );
@@ -357,7 +366,7 @@ static inline void okada_add_grad_Az( Vector *gradz, const OkadaConsts *consts, 
     gradz->z += U.z * (  .5 * ( 1. - consts->ALPHA ) * ( consts->ytilde * consts->X11 + consts->xi * consts->Y11 * consts->cos ) + .5 * consts->ALPHA * consts->q * consts->Hprime );
   }
 }
-static inline void okada_add_grad_B( Matrix *grad, const OkadaConsts *consts, const Vector U ) {
+__inline void okada_add_grad_B( Matrix *grad, const OkadaConsts *consts, const Vector U ) {
   if ( U.x ) {
     grad->x.x += U.x * (  consts->xi * consts->xi * consts->q * consts->Y32 - ( 1. - consts->ALPHA ) / consts->ALPHA * consts->J1 * consts->sin );
     grad->x.y += U.x * (  consts->xi * consts->q / consts->R3 - ( 1. - consts->ALPHA ) / consts->ALPHA * consts->J2 * consts->sin );
@@ -392,7 +401,7 @@ static inline void okada_add_grad_B( Matrix *grad, const OkadaConsts *consts, co
     grad->z.z += U.z * ( -consts->q * consts->Hprime + ( 1. - consts->ALPHA ) / consts->ALPHA * consts->K4 * consts->sin * consts->sin );
   }
 }
-static inline void okada_add_grad_C( Matrix *grad, const OkadaConsts *consts, const Vector U ) {
+__inline void okada_add_grad_C( Matrix *grad, const OkadaConsts *consts, const Vector U ) {
   if ( U.x ) {
     grad->x.x += U.x * (  ( 1. - consts->ALPHA ) * consts->Y0 * consts->cos - consts->ALPHA * consts->q * consts->Z0 );
     grad->x.y += U.x * ( -( 1. - consts->ALPHA ) * consts->xi * ( consts->cos / consts->R3 + 2. * consts->q * consts->Y32 * consts->sin ) + consts->ALPHA * 3. * consts->ctilde * consts->xi * consts->q / consts->R5 );
@@ -537,10 +546,10 @@ Matrix get_gradient( SourceParams *params, Vector *where, double poisson ) {
   Matrix_irot_xy( &grad, perp_strike );
   return grad;
 }
-void get_displacements( Vector *out, SourceParams *params, Vector *where, double poisson, int count ) {
+EXPORT void get_displacements( Vector *out, SourceParams *params, Vector *where, double poisson, int count ) {
   while ( count-- ) Vector_copy( out++, get_displacement(params,where++,poisson) );
 }
-void get_gradients( Matrix *out, SourceParams *params, Vector *where, double poisson, int count ) {
+EXPORT void get_gradients( Matrix *out, SourceParams *params, Vector *where, double poisson, int count ) {
   while ( count-- ) Matrix_copy( out++, get_gradient(params,where++,poisson) );
 }
 
