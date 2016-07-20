@@ -1,13 +1,9 @@
 import numpy, sys, os, ctypes, platform
 from source import Source
 
-
-if platform.system() == 'Linux':
-  libokada = ctypes.cdll.LoadLibrary( os.path.join( os.path.dirname(__file__), 'libokada.so' ) )
-elif platform.system() == 'Windows':
-  libokada = ctypes.cdll.LoadLibrary( 'libokada.dll' )
-else:
-  raise Exception( 'unsupported platform: {}'.formst( platform.system() ) )
+libokada_file = 'libokada.' + { 'Linux': 'so', 'Windows': 'dll' }[platform.system()]
+libokada_path = os.path.join( os.path.dirname(__file__), libokada_file )
+libokada = ctypes.cdll.LoadLibrary( libokada_path )
 
 
 dsin = lambda x: numpy.sin( x * numpy.pi / 180. )
