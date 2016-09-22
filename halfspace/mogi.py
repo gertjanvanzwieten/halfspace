@@ -1,5 +1,5 @@
+from .source import Source, diag
 import numpy
-from source import Source, diag
 
 _ = numpy.newaxis
 

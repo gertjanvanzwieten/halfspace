@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 
-print 'generating data'
-
+from __future__ import print_function
 import halfspace, numpy
+
+print( 'generating data' )
 
 los = 0.3815, 0.0843, 0.9205 # unit vector
 wavelength = .056 # meter
@@ -24,7 +25,7 @@ disp = fault.displacement( XYZ, poisson=.25 )
 disp_los = numpy.dot( disp, los )
 phase = ( numpy.mod( disp_los / ( .5 * wavelength ) * 2 + 1, 2 ) - 1 ) * numpy.pi
 
-print 'plotting'
+print( 'plotting' )
 
 from matplotlib import pylab
 
@@ -44,6 +45,6 @@ ax.yaxis.set_major_formatter( formatter )
 pylab.axis( extent )
 pylab.grid()
 
-print 'done'
+print( 'done' )
 
 pylab.show()

@@ -1,2 +1,2 @@
-from okada import OkadaSource
-from mogi import MogiSource
+from .okada import OkadaSource
+from .mogi import MogiSource

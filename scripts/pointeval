@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
 import numpy, halfspace
 
 delta = 1e-6
@@ -11,54 +12,54 @@ source = halfspace.OkadaSource( strike=355, dip=83,
 
 #source = halfspace.MogiSource( 0, 0, -10, 1e10 )
 
-print 'Source:', source
+print( 'Source:', source )
 
 x, y = 2, 3
 
-print
-print 'SURFACE POINT (%s,%s,0)' % ( x, y )
-print
+print()
+print( 'SURFACE POINT (%s,%s,0)' % ( x, y ) )
+print()
 
-print 'displacement:'
-print source.displacement( [x,y,0], poisson=.25 )
+print( 'displacement:' )
+print( source.displacement( [x,y,0], poisson=.25 ) )
 
-print 'gradient:'
+print( 'gradient:' )
 grad = source.gradient( [x,y,0], poisson=.25 )
-print grad
+print( grad )
 
-print 'relative error:'
+print( 'relative error:' )
 dudx = ( source.displacement( [x+delta,y,0], poisson=.25 ) - source.displacement( [x-delta,y,0], poisson=.25 ) ) / (2*delta)
 dudy = ( source.displacement( [x,y+delta,0], poisson=.25 ) - source.displacement( [x,y-delta,0], poisson=.25 ) ) / (2*delta)
 dudz = ( source.displacement( [x,y,0], poisson=.25 ) - source.displacement( [x,y,-delta], poisson=.25 ) ) / delta
-print numpy.array( [ dudx, dudy, dudz ] ) / grad - numpy.ones(( 3, 3 ))
+print( numpy.array( [ dudx, dudy, dudz ] ) / grad - numpy.ones(( 3, 3 )) )
 
-print 'strain:'
-print source.strain( [x,y,9], poisson=.25 )
+print( 'strain:' )
+print( source.strain( [x,y,9], poisson=.25 ) )
 
-print 'stress:'
-print source.stress( [x,y,0], poisson=.25, young=80.75e9 )
+print( 'stress:' )
+print( source.stress( [x,y,0], poisson=.25, young=80.75e9 ) )
 
 x, y, z = 2, 3, -1
 
-print
-print 'INTERNAL POINT (%s,%s,%s)' % ( x, y, z )
-print
+print()
+print( 'INTERNAL POINT (%s,%s,%s)' % ( x, y, z ) )
+print()
 
-print 'displacement:'
-print source.displacement( [x,y,z], poisson=.25 )
+print( 'displacement:' )
+print( source.displacement( [x,y,z], poisson=.25 ) )
 
-print 'gradient:'
+print( 'gradient:' )
 grad = source.gradient( [x,y,z], poisson=.25 )
-print grad
+print( grad )
 
-print 'relative error:'
+print( 'relative error:' )
 dudx = ( source.displacement( [x+delta,y,z], poisson=.25 ) - source.displacement( [x-delta,y,z], poisson=.25 ) ) / (2*delta)
 dudy = ( source.displacement( [x,y+delta,z], poisson=.25 ) - source.displacement( [x,y-delta,z], poisson=.25 ) ) / (2*delta)
 dudz = ( source.displacement( [x,y,z+delta], poisson=.25 ) - source.displacement( [x,y,z-delta], poisson=.25 ) ) / (2*delta)
-print numpy.array( [ dudx, dudy, dudz ] ) / grad - numpy.ones(( 3, 3 ))
+print( numpy.array( [ dudx, dudy, dudz ] ) / grad - numpy.ones(( 3, 3 )) )
 
-print 'strain:'
-print source.strain( [x,y,z], poisson=.25 )
+print( 'strain:' )
+print( source.strain( [x,y,z], poisson=.25 ) )
 
-print 'stress:'
-print source.stress( [x,y,z], poisson=.25, young=80.75e9 )
+print( 'stress:' )
+print( source.stress( [x,y,z], poisson=.25, young=80.75e9 ) )

@@ -1,5 +1,5 @@
+from .source import Source
 import numpy, sys, os, ctypes, platform
-from source import Source
 
 libokada_file = 'libokada.' + { 'Linux': 'so', 'Windows': 'dll' }[platform.system()]
 libokada_path = os.path.join( os.path.dirname(__file__), libokada_file )
@@ -17,7 +17,7 @@ def tryfuncs( kwargs, *funcs ):
       return f( **kwargs )
     except TypeError:
       pass
-  raise Exception, 'not supported: ' + ', '.join( kwargs.keys() )
+  raise Exception( 'not supported: ' + ', '.join( kwargs.keys() ) )
 
 
 class OkadaSource( Source ):
