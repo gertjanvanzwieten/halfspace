@@ -30,7 +30,7 @@ class BaseTest( object ):
     ngrad[:,2] = ( self.source.displacement( [x,y,z+self.eps], poisson=.25 )
                  - self.source.displacement( [x,y,z-self.eps], poisson=.25 ) ) / (2*self.eps)
 
-    numpy.testing.assert_almost_equal( ngrad, grad, decimal=7 )
+    numpy.testing.assert_almost_equal( ngrad, grad, decimal=8 )
 
   def test_divergence( self ):
 
@@ -43,7 +43,7 @@ class BaseTest( object ):
     dszdz = ( self.source.stress( [x,y,0],          poisson=.25, young=1e6 )
             - self.source.stress( [x,y,-self.eps],  poisson=.25, young=1e6 ) )[:,2] / self.eps
 
-    numpy.testing.assert_almost_equal( dsxdx + dsydy + dszdz, 0, decimal=5 )
+    numpy.testing.assert_almost_equal( dsxdx + dsydy + dszdz, 0, decimal=2 )
 
     dsxdx = ( self.source.stress( [x+self.eps,y,z], poisson=.25, young=1e6 )
             - self.source.stress( [x-self.eps,y,z], poisson=.25, young=1e6 ) )[:,0] / (2*self.eps)
@@ -52,7 +52,7 @@ class BaseTest( object ):
     dszdz = ( self.source.stress( [x,y,z+self.eps], poisson=.25, young=1e6 )
             - self.source.stress( [x,y,z-self.eps], poisson=.25, young=1e6 ) )[:,2] / (2*self.eps)
     
-    numpy.testing.assert_almost_equal( dsxdx + dsydy + dszdz, 0, decimal=5 )
+    numpy.testing.assert_almost_equal( dsxdx + dsydy + dszdz, 0, decimal=3 )
 
   def test_traction( self ):
 
@@ -60,7 +60,7 @@ class BaseTest( object ):
 
     stress = self.source.stress( [x,y,0], poisson=.25, young=1e6 )
 
-    numpy.testing.assert_almost_equal( stress[:,2], 0, decimal=13 )
+    numpy.testing.assert_almost_equal( stress[:,2], 0, decimal=10 )
 
 
 class TestOkada( BaseTest ):
@@ -70,7 +70,7 @@ class TestOkada( BaseTest ):
     self.source = halfspace.OkadaSource(
       strike=355, dip=83,
       strikeslip=2, dipslip=.3,
-      zbottom=-17e3, ztop=-1e3, length=20e3,
+      zbottom=-17, ztop=-1, length=20,
       xtrace=0, ytrace=0 )
 
 
@@ -78,4 +78,4 @@ class TestMogi( BaseTest ):
 
   def __init__( self ):
 
-    self.source = halfspace.MogiSource( xyz=[1,2,-3] ) * 2
+    self.source = halfspace.MogiSource( xyz=[1,2,-3] )
