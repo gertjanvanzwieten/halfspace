@@ -5,12 +5,10 @@ import numpy, halfspace
 
 delta = 1e-6
 
-source = halfspace.OkadaSource( strike=355, dip=83,
-                                strikeslip=2, dipslip=.3,
-                                zbottom=-17e3, ztop=-1e3, length=20e3,
-                                xtrace=0, ytrace=0 )
-
-#source = halfspace.MogiSource( 0, 0, -10, 1e10 )
+source = halfspace.okada( strike=355, dip=83,
+                          strikeslip=2, dipslip=.3,
+                          zbottom=-17e3, ztop=-1e3, length=20e3,
+                          xtrace=0, ytrace=0 )
 
 print( 'Source:', source )
 

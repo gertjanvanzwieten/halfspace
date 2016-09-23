@@ -1,81 +1,54 @@
-import numpy, halfspace
+import numpy, halfspace, functools
+_ = numpy.newaxis
+
+
+def _ngrad( f, xyz, eps ):
+  assert xyz.ndim == 2 and xyz.shape[1] == 3 # no need to make it more generic than this
+  dxyz = numpy.array([.5,-.5])[:,_,_] * numpy.eye(3) * eps # pos/neg perturbations on first axis
+  ngrad = numpy.subtract( *f( xyz[_,:,_,:] + dxyz[:,_,:,:] ) ) / eps # finite difference of f
+  return ngrad.transpose( [0] + range(2,ngrad.ndim) + [1] ) # put gradient axis last
+
 
 class BaseTest( object ):
 
   eps = 1e-6
+  xyz = numpy.array( [[2,3,-1],[3,1,-2]] ) # two arbitrary points
+  xyz0 = xyz * [1,1,0] # two arbitrary points on surface
 
   def test_gradient( self ):
-
-    x, y, z = 2, 3, -1
-    
-    grad = self.source.gradient( [x,y,0], poisson=.25 )
-
-    ngrad = numpy.empty((3,3))
-    ngrad[:,0] = ( self.source.displacement( [x+self.eps,y,0], poisson=.25 )
-                 - self.source.displacement( [x-self.eps,y,0], poisson=.25 ) ) / (2*self.eps)
-    ngrad[:,1] = ( self.source.displacement( [x,y+self.eps,0], poisson=.25 )
-                 - self.source.displacement( [x,y-self.eps,0], poisson=.25 ) ) / (2*self.eps)
-    ngrad[:,2] = ( self.source.displacement( [x,y,0],          poisson=.25 )
-                 - self.source.displacement( [x,y,-self.eps],  poisson=.25 ) ) / self.eps
-
-    numpy.testing.assert_almost_equal( ngrad, grad, decimal=7 )
-
-    grad = self.source.gradient( [x,y,z], poisson=.25 )
-    
-    ngrad = numpy.empty((3,3))
-    ngrad[:,0] = ( self.source.displacement( [x+self.eps,y,z], poisson=.25 )
-                 - self.source.displacement( [x-self.eps,y,z], poisson=.25 ) ) / (2*self.eps)
-    ngrad[:,1] = ( self.source.displacement( [x,y+self.eps,z], poisson=.25 )
-                 - self.source.displacement( [x,y-self.eps,z], poisson=.25 ) ) / (2*self.eps)
-    ngrad[:,2] = ( self.source.displacement( [x,y,z+self.eps], poisson=.25 )
-                 - self.source.displacement( [x,y,z-self.eps], poisson=.25 ) ) / (2*self.eps)
-
-    numpy.testing.assert_almost_equal( ngrad, grad, decimal=8 )
+    for xyz in self.xyz0, self.xyz:
+      grad = self.source.gradient( xyz, poisson=.25 )
+      ngrad = _ngrad( functools.partial( self.source.displacement, poisson=.25 ), xyz, self.eps )
+      numpy.testing.assert_almost_equal( ngrad, grad, decimal=7 )
 
   def test_divergence( self ):
-
-    x, y, z = 2, 3, -1
-
-    dsxdx = ( self.source.stress( [x+self.eps,y,0], poisson=.25, young=1e6 )
-            - self.source.stress( [x-self.eps,y,0], poisson=.25, young=1e6 ) )[:,0] / (2*self.eps)
-    dsydy = ( self.source.stress( [x,y+self.eps,0], poisson=.25, young=1e6 )
-            - self.source.stress( [x,y-self.eps,0], poisson=.25, young=1e6 ) )[:,1] / (2*self.eps)
-    dszdz = ( self.source.stress( [x,y,0],          poisson=.25, young=1e6 )
-            - self.source.stress( [x,y,-self.eps],  poisson=.25, young=1e6 ) )[:,2] / self.eps
-
-    numpy.testing.assert_almost_equal( dsxdx + dsydy + dszdz, 0, decimal=2 )
-
-    dsxdx = ( self.source.stress( [x+self.eps,y,z], poisson=.25, young=1e6 )
-            - self.source.stress( [x-self.eps,y,z], poisson=.25, young=1e6 ) )[:,0] / (2*self.eps)
-    dsydy = ( self.source.stress( [x,y+self.eps,z], poisson=.25, young=1e6 )
-            - self.source.stress( [x,y-self.eps,z], poisson=.25, young=1e6 ) )[:,1] / (2*self.eps)
-    dszdz = ( self.source.stress( [x,y,z+self.eps], poisson=.25, young=1e6 )
-            - self.source.stress( [x,y,z-self.eps], poisson=.25, young=1e6 ) )[:,2] / (2*self.eps)
-    
-    numpy.testing.assert_almost_equal( dsxdx + dsydy + dszdz, 0, decimal=3 )
+    for xyz in self.xyz0, self.xyz:
+      div = _ngrad( functools.partial( self.source.stress, poisson=.25, young=1e3 ), xyz, self.eps ).trace( axis1=-1, axis2=-2 )
+      numpy.testing.assert_almost_equal( div, 0, decimal=6 )
 
   def test_traction( self ):
-
-    x, y = 2, 3
-
-    stress = self.source.stress( [x,y,0], poisson=.25, young=1e6 )
-
-    numpy.testing.assert_almost_equal( stress[:,2], 0, decimal=10 )
+    stress = self.source.stress( self.xyz0, poisson=.25, young=1e6 )
+    numpy.testing.assert_almost_equal( stress[...,2], 0, decimal=10 )
 
 
 class TestOkada( BaseTest ):
-
   def __init__( self ):
-
-    self.source = halfspace.OkadaSource(
+    self.source = halfspace.okada(
       strike=355, dip=83,
       strikeslip=2, dipslip=.3,
       zbottom=-17, ztop=-1, length=20,
       xtrace=0, ytrace=0 )
 
 
-class TestMogi( BaseTest ):
-
+class TestRotation( BaseTest ):
   def __init__( self ):
+    self.source = halfspace.okada(
+      strike=355, dip=83,
+      strikeslip=2, dipslip=.3,
+      zbottom=-17, ztop=-1, length=20,
+      xtrace=0, ytrace=0 ).rotated( 20 )
 
-    self.source = halfspace.MogiSource( xyz=[1,2,-3] )
+
+class TestMogi( BaseTest ):
+  def __init__( self ):
+    self.source = halfspace.mogi( xyz=[1,2,-3] )

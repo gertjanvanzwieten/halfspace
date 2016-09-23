@@ -5,7 +5,7 @@ import numpy, halfspace
 
 print( 'generating data' )
 
-fault = halfspace.OkadaSource(
+fault = halfspace.okada(
   strike=160, dip=35, rake=105, slip=1,
   ztop=-2e3, zbottom=-10e3, length=20e3,
   xtrace=0, ytrace=0 )

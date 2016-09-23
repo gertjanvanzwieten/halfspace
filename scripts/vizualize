@@ -9,7 +9,7 @@ los = 0.3815, 0.0843, 0.9205 # unit vector
 wavelength = .056 # meter
 extent = -25e3, 25e3, -25e3, 25e3 # meter (xmin,xmax,ymin,ymax)
 
-fault = halfspace.OkadaSource(
+fault = halfspace.okada(
   strike=30, dip=60, rake=0, # degree
   slip=1.5, # meter
   ztop=-1.5e3, zbottom=-7e3, length=16e3, # meter
