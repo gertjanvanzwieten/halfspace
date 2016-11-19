@@ -6,7 +6,7 @@ def _ngrad( f, xyz, eps ):
   assert xyz.ndim == 2 and xyz.shape[1] == 3 # no need to make it more generic than this
   dxyz = numpy.array([.5,-.5])[:,_,_] * numpy.eye(3) * eps # pos/neg perturbations on first axis
   ngrad = numpy.subtract( *f( xyz[_,:,_,:] + dxyz[:,_,:,:] ) ) / eps # finite difference of f
-  return ngrad.transpose( [0] + range(2,ngrad.ndim) + [1] ) # put gradient axis last
+  return ngrad.transpose( [0] + list(range(2,ngrad.ndim)) + [1] ) # put gradient axis last
 
 
 class BaseTest( object ):
@@ -52,3 +52,8 @@ class TestRotation( BaseTest ):
 class TestMogi( BaseTest ):
   def __init__( self ):
     self.source = halfspace.mogi( xyz=[1,2,-3] )
+
+
+class TestCouple( BaseTest ):
+  def __init__( self ):
+    self.source = halfspace.couple( xyz=[1,2,-3], strength=[1,2,3] )
