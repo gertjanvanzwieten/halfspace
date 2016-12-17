@@ -54,6 +54,16 @@ class TestMogi( BaseTest ):
     self.source = halfspace.mogi( xyz=[1,2,-3] )
 
 
-class TestCouple( BaseTest ):
+class TestStrike( BaseTest ):
   def __init__( self ):
-    self.source = halfspace.couple( xyz=[1,2,-3], strength=[1,2,3] )
+    self.source = halfspace.couple( xyz=[1,2,-3], strength=[1,0,0], dip=30 )
+
+
+class TestDip( BaseTest ):
+  def __init__( self ):
+    self.source = halfspace.couple( xyz=[1,2,-3], strength=[0,1,0], dip=30 )
+
+
+class TestTensile( BaseTest ):
+  def __init__( self ):
+    self.source = halfspace.couple( xyz=[1,2,-3], strength=[0,0,1], dip=30 )
