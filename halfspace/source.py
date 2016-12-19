@@ -112,7 +112,6 @@ class RotateSource( Source ):
     cos = numpy.cos( rad )
     sin = numpy.sin( rad )
     self.rotmat = numpy.array([[cos,sin],[-sin,cos]])
-    self.fullrotmat = numpy.array([[cos,sin,0],[-sin,cos,0],[0,0,1]])
 
   def rotated( self, angle ):
     return self.source.rotated( self.angle + angle )
