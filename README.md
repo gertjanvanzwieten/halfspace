@@ -3,15 +3,15 @@ Halfspace
 
 The halfspace tool can be used to compute the displacements, strains, and
 stresses, induced by any number of sources in a homogeneous elastic halfspace.
-Currently the only supported source is the Okada rectangular dislocation plane
-as originally published [here] [okada] (paywall). A mogi / inflation source
-will be added in due time.
+Currently sources are an inflation (Mogi) point source, a tensile point source,
+a strike-couple point source, a dip-couple point source, and the Okada
+rectangular dislocation plane as originally published [here] [okada] (paywall).
 
 [okada]: http://www.bssaonline.org/content/82/2/1018.short
 
 
-OkadaSource
------------
+Okada
+-----
 
 The OkadaSource object requires:
 
@@ -43,7 +43,7 @@ strikeslip-dipslip must occur in pairs, and opening defaults to zero):
 
 For example:
 
-    >> okada = halfspace.OkadaSource( length=16e3, strike=30, dip=60,
+    >> okada = halfspace.okada( length=16e3, strike=30, dip=60,
                    ztop=-1.5e3, zbottom=-7e3, xtrace=0, ytrace=0,
                         slip=1.5, rake=0 )
 
@@ -51,8 +51,8 @@ All parameters can be retrieved from the object as okada.length, okada.strike,
 etc.
 
 
-Source functionality
---------------------
+General source functionality
+----------------------------
 
 Source objects share the following methods:
 
@@ -79,9 +79,6 @@ Furthermore, sources can be added and scaled using the + and * operators.
 
 The resulting MultiSource object has the same functionalities as the
 individial source objects, and can be used to quickly evaluate any
-linear combination. The individual sources can be retrieved using the
-[] operator
-
-    >> multi[0] is okada # True
+linear combination.
 
 For further usage examples please see the scripts directory.
