@@ -12,7 +12,8 @@ class Source( object ):
     mu = young/float(2*(1+poisson))
     strain = self.strain( xyz, poisson )
     stress = (2*mu) * strain
-    diag(stress)[...] += lmbda * numpy.trace( strain, axis1=-2, axis2=-1 )[...,numpy.newaxis]
+    diag = numpy.einsum( '...ii->...i', stress )
+    diag += lmbda * numpy.trace( strain, axis1=-2, axis2=-1 )[...,numpy.newaxis]
     return stress
 
   def translated( self, xy ):
@@ -137,6 +138,3 @@ class RotateSource( Source ):
     self._rotateback( gradient, axis=-1 )
     self._rotateback( gradient, axis=-2 )
     return gradient
-
-
-diag = lambda A: numpy.einsum( '...ii->...i', A )

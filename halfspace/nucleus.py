@@ -1,6 +1,7 @@
-from .source import Source, diag
+from .source import Source
 import numpy
 
+adddiag = lambda A, v: numpy.einsum( '...ii->...i', A ).__iadd__( v )
 _ = numpy.newaxis
 
 
@@ -66,7 +67,7 @@ class MogiSource( Nucleus ):
   def duA( self, xyd, alpha ):
     R = numpy.linalg.norm( xyd, axis=-1 )
     duA = 3 * xyd[...,_,:] * xyd[...,_] * R[...,_,_]**-5
-    diag(duA)[...] -= R[...,_]**-3
+    adddiag( duA, -R[...,_]**-3 )
     duA[...,2] *= -1
     duA *= .5 - .5 * alpha
     return duA
@@ -74,7 +75,7 @@ class MogiSource( Nucleus ):
   def duB( self, xyd, alpha ):
     R = numpy.linalg.norm( xyd, axis=-1 )
     duB = 3 * xyd[...,_,:] * xyd[...,_] * R[...,_,_]**-5
-    diag(duB)[...] -= R[...,_]**-3
+    adddiag( duB, -R[...,_]**-3 )
     duB[...,2] *= -1
     duB *= 1 - 1/alpha
     return duB
@@ -86,7 +87,7 @@ class MogiSource( Nucleus ):
     duC[...,2,:] *= -1
     duC[...,2,:] -= 6 * xyd * R[...,_]**-5
     duC[...,2] *= -1
-    diag(duC)[...] += 6 * xyd[...,_,2] * R[...,_]**-5
+    adddiag( duC, 6 * xyd[...,_,2] * R[...,_]**-5 )
     duC *= .5 - .5 * alpha
     return duC
 
@@ -153,7 +154,7 @@ class TensileSource( Nucleus ):
     duA1dxyz += self.rotmat2
     duA1dxyz *= .5 * (1-alpha) * R[...,_,_]**-3
     duA2dxyz = 5 * xyd[...,:,_] * xyd[...,_,:] * R[...,_,_]**-2
-    diag(duA2dxyz)[...] -= 1
+    adddiag( duA2dxyz, -1 )
     duA2dxyz[...,2] *= -1
     duA2dxyz *= a2[...,_,_]
     duA2dxyz[...,1] -= 2 * self.sind * xyd 
