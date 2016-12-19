@@ -51,10 +51,7 @@ class MogiSource( Nucleus ):
     return uA
 
   def uB( self, xyd, alpha ):
-    R = numpy.linalg.norm( xyd, axis=-1 )
-    uB = -xyd * R[...,_]**-3
-    uB *= 1 - 1/alpha
-    return uB
+    return self.uA( xyd, alpha ) * (-2/alpha)
 
   def uC( self, xyd, alpha ):
     R = numpy.linalg.norm( xyd, axis=-1 )
@@ -73,12 +70,7 @@ class MogiSource( Nucleus ):
     return duA
 
   def duB( self, xyd, alpha ):
-    R = numpy.linalg.norm( xyd, axis=-1 )
-    duB = 3 * xyd[...,_,:] * xyd[...,_] * R[...,_,_]**-5
-    adddiag( duB, -R[...,_]**-3 )
-    duB[...,2] *= -1
-    duB *= 1 - 1/alpha
-    return duB
+    return self.duA( xyd, alpha ) * (-2/alpha)
 
   def duC( self, xyd, alpha ):
     R = numpy.linalg.norm( xyd, axis=-1 )
